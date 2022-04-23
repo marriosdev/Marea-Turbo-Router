@@ -23,7 +23,6 @@ class Router {
     
     const FUNCTION_PROCESS   = 0;
 
-    
     /**
      * 
      */
@@ -33,7 +32,11 @@ class Router {
     }
 
     /**
+     * Function that registers the routes
      * 
+     * @param String $verb      | HTTP Method   -> "POST|GET|PUT|PATCH|DELETE|OPTIONS|HEAD"
+     * @param String $path      | Defined route -> "/test/image/"
+     * @param Array  $execute   | Action that will be performed when there is a request in the route
      */
     public function set(String $verb, String $path, Array $execute)
     {
@@ -49,35 +52,64 @@ class Router {
      */
     public function run()
     {
-        // Getting current URL from request
-        $currentUrl = $this->currentUrl;        
-        $currentUrl = $this->_clearUrl($currentUrl);
+        try {
+     
+            // Getting current URL from request
+            $currentUrl = $this->currentUrl;        
+            $currentUrl = $this->_clearUrl($currentUrl);
 
-        // Going through all defined routes
-        foreach($this->definedRoutes as $key=>$value)
-        {
-            // Taking a defined route
-            $url = $value["path"];
-            $url = $this->_clearUrl($url);
+            $notFound = true;
 
-            // Checking if the current URL matches the defined route
-            $urlsMatched = $this->_matched(new Url($currentUrl), new Url($url));
-            
-            // If it matches, let's run it
-            if($urlsMatched){
-                /**
-                 *  If there is any dynamic parameter defined in the route, we will get these values
-                 */
-                $urlParams = $this->_getUrlParams($url);
+            // Going through all defined routes
+            foreach($this->definedRoutes as $key=>$value)
+            {
+                $this->_checkverb($value["verb"]);
 
-                // Running
-                try {
-                    $this->_executeMethod($value["execute"], $urlParams);
-                } catch (\Exception $e) {
-                    $this->renderErrorMessage($e);
+                // Taking a defined route
+                $url = $value["path"];
+                $url = $this->_clearUrl($url);
+
+                // Checking if the current URL matches the defined route
+                if(strtoupper($value["verb"]) == $_SERVER["REQUEST_METHOD"]){
+                    $urlsMatched = $this->_matched(new Url($currentUrl), new Url($url));
+                    
+                    // If it matches, let's run it
+                    if($urlsMatched){
+                        /**
+                         *  If there is any dynamic parameter defined in the route, we will get these values
+                         */
+                        $urlParams = $this->_getUrlParams($url);
+
+                        // Running
+                        $this->_executeMethod($value["execute"], $urlParams);
+                        $notFound = false;
+                    }
                 }
             }
+        } catch (\Exception $e) {
+            
+            $this->renderErrorMessage($e);
         }
+
+        if($notFound){
+            echo "404 NOT FOUND";
+        }
+    }
+
+
+    /**
+     * Checks if the method passed in the defined route is valid
+     * 
+     * @param String $verb
+     * @return \Exception|Bool
+     */
+    private function _checkVerb(String $verb)
+    {
+        if(!preg_match("/".strtoupper($verb)."/", Router::HTTP_VERBS))
+        {
+            return throw new \Exception('Invalid HTTP method: "'.$verb.'"');
+        }
+        return true;
     }
 
     /**

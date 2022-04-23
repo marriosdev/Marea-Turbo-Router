@@ -9,7 +9,7 @@ use Marrios\Router\Router;
 
 $route = new Router();
 
-$route->set("POST",  "/function/{teste}", [function($e){echo $e->dsad;}]);
-$route->set("POST",  "/class/{teste}", [Controller::class]);
+$route->set("POST",  "/function/{teste}", [function($e){echo $e->teste;}]);
+$route->set("POST",  "/class/{teste}", [Controller::class, "index"]);
 
 $route->run();
