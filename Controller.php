@@ -2,7 +2,7 @@
 
 class Controller {
     
-    public function index(){
-        echo "teste";
+    public function index($parametros){
+        echo $parametros->teste;
     }
 }

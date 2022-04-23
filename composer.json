@@ -1,0 +1,16 @@
+{
+    "name": "marrios/router",
+    "description": "Route manager",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Marrios\\Router\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Marrios Dev"
+        }
+    ],
+    "require": {}
+}

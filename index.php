@@ -1,13 +1,15 @@
 <?php
 
-require_once("Router.php");
+require("vendor/autoload.php");
+
 require_once("Controller.php");
 
 use Controller;
+use Marrios\Router\Router;
+
 $route = new Router();
 
-
-// Valores entre {} são valores dinamicos
-$route->set("POST", "/teste/{dsad}/marrios/", [Controller::class, "index"]);
+$route->set("POST",  "/function/{teste}", [function($e){echo $e->dsad;}]);
+$route->set("POST",  "/class/{teste}", [Controller::class]);
 
 $route->run();
