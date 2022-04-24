@@ -1,8 +1,8 @@
-<?php
+<?php 
 
 class Controller {
     
-    public function index($parametros){
-        echo $parametros->teste;
+    public function index(){
+        echo "testeee";
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Marrios\Router;
 
+use Exception;
 use Marrios\Router\Entities\Parameter;
 use Marrios\Router\RouteParameters;
 use Marrios\Router\Entities\Url;
@@ -11,18 +12,60 @@ class Router {
 
     use ErrorMessage;
 
-    private $definedRoutes;
+    /**
+     * @var Array
+     */
+    private $definedRoute;
 
+    /**
+     * @var String
+     */
     private $currentUrl;
-    
+
+    /**
+     */
     const HTTP_VERBS = "POST|GET|PUT|PATCH|DELETE|OPTIONS|HEAD";
 
-    const METHOD_PROCESS     = 1;
-    
-    const CLASS_PROCESS      = 0;
-    
-    const FUNCTION_PROCESS   = 0;
+    /**
+     * @var Array
+     */
+    private $postList;
 
+    /**
+     * @var Array
+     */
+    private $getList;
+
+    /**
+     * @var Array
+     */
+    private $putList;
+    
+    /**
+     * @var Array
+     */
+    private $patchList;
+
+    /**
+     * @var Array
+     */
+    private $deleteList;
+
+    /**
+     * @var Array
+     */
+    private $optionsList;
+
+    /**
+     * @var Array
+     */
+    private $headList;
+
+    /**
+     * @var Bool
+     */
+    private Bool $middlewareBlock;
+    
     /**
      * 
      */
@@ -37,14 +80,40 @@ class Router {
      * @param String $verb      | HTTP Method   -> "POST|GET|PUT|PATCH|DELETE|OPTIONS|HEAD"
      * @param String $path      | Defined route -> "/test/image/"
      * @param Array  $execute   | Action that will be performed when there is a request in the route
+     * 
+     * @return Object Marrios\Router\Router; 
      */
     public function set(String $verb, String $path, Array $execute)
     {
-        $this->definedRoutes[] = [
+        unset($this->definedRoute);
+
+        $this->_checkverb($verb);
+
+        $this->definedRoute["route"] = [
             "path"       => $path,
-            "verb"       => $verb,    
-            "execute"    => $execute       
+            "verb"       => $verb,           
         ];
+
+        if(count($execute)==0)
+        {
+            echo "SEM 3 PARAMETRO";
+            return "deve passar alguma coisa";
+        }
+
+        if(is_callable($execute[0])){
+            $this->definedRoute["route"] += [
+                "callBack" => $execute[0]
+            ];
+        }else{
+            $this->definedRoute["route"] += [
+                "controller" => [
+                    "class"     => $execute[0],
+                    "method"    => $execute[1]
+                ]
+            ];
+        }
+
+        return $this;
     }
 
     /**
@@ -53,46 +122,33 @@ class Router {
     public function run()
     {
         try {
-     
-            // Getting current URL from request
-            $currentUrl = $this->currentUrl;        
-            $currentUrl = $this->_clearUrl($currentUrl);
+            $currentUrl   = $this->currentUrl;        
+            $currentUrl   = $this->_clearUrl($currentUrl);
+            $definedRoute = $this->definedRoute["route"] ; 
 
-            $notFound = true;
+            $url = $definedRoute["path"];
+            $url = $this->_clearUrl($url);
 
-            // Going through all defined routes
-            foreach($this->definedRoutes as $key=>$value)
-            {
-                $this->_checkverb($value["verb"]);
+            // Checking if the current URL matches the defined route
+            if(strtoupper($definedRoute["verb"]) == $_SERVER["REQUEST_METHOD"]){
 
-                // Taking a defined route
-                $url = $value["path"];
-                $url = $this->_clearUrl($url);
+                $urlsMatched = $this->_matched(new Url($currentUrl), new Url($url));
+                
+                // If it matches, let's run it
+                if($urlsMatched){
 
-                // Checking if the current URL matches the defined route
-                if(strtoupper($value["verb"]) == $_SERVER["REQUEST_METHOD"]){
-                    $urlsMatched = $this->_matched(new Url($currentUrl), new Url($url));
+                    // If there is any dynamic parameter defined in the route, we will get these this->definedRoutes
+                    $urlParams = $this->_getUrlParams($url);
+
+                    // Running
+                    $this->_execute($definedRoute, $urlParams);
                     
-                    // If it matches, let's run it
-                    if($urlsMatched){
-                        /**
-                         *  If there is any dynamic parameter defined in the route, we will get these values
-                         */
-                        $urlParams = $this->_getUrlParams($url);
-
-                        // Running
-                        $this->_executeMethod($value["execute"], $urlParams);
-                        $notFound = false;
-                    }
+                    //closing
+                    exit;
                 }
             }
         } catch (\Exception $e) {
-            
             $this->renderErrorMessage($e);
-        }
-
-        if($notFound){
-            echo "404 NOT FOUND";
         }
     }
 
@@ -113,47 +169,49 @@ class Router {
     }
 
     /**
+     * 
+     */
+    private function _runCallBack(\Closure $callBack, RouteParameters $routeParams)
+    {
+        return $callBack($routeParams);
+    }
+    
+    /**
+     * 
+     */
+    private function _runController(Array $process, RouteParameters $routeParams)
+    {
+        $controller = new $process["class"]();
+        $method = $process["method"];
+
+        if($routeParams->count > 0)
+        {
+            return $controller->$method($routeParams);
+        }
+        return $controller->$method();
+    }
+
+    /**
      * Function that executes the route
      * 
-     * @param $process | 
-     * @route
+     * @param $process | $routeParams 
+     * 
      * @return bool|\Exception
      */
-    private function _executeMethod($process, $routeParams)
+    private function _execute(Array $process, RouteParameters $routeParams)
     {
-        // Checking if the passed parameter is a function
-        if(is_callable($process[Router::CLASS_PROCESS]))
+        if(isset($process["callBack"]))
         {
-            return $process[Router::FUNCTION_PROCESS]($routeParams);
+            $this->_runCallBack($process["callBack"], $routeParams);
+            return true;
         }
 
-        if(isset($process[Router::CLASS_PROCESS])){
-            $class   = $process[Router::CLASS_PROCESS];
-            
-            if(isset($process[Router::METHOD_PROCESS])){
-                $method  = $process[Router::METHOD_PROCESS];
-            }else{
-                return throw new \Exception("You must pass a method from the class: {$class}");
-            }
-        }else{
-            return throw new \Exception("You must pass a function or a class and a method");    
+        if(isset($process["controller"]))
+        {
+            $this->_runController($process["controller"], $routeParams);
         }
 
-        if(class_exists("{$class}"))
-        {
-            $class = new $class();
-            
-            if(method_exists($class, $method)){
-                if($routeParams->count > 0){
-                    $class->$method($routeParams);
-                    return true;
-                }
-                $class->$method();
-                return true;
-            }
-            return throw new \Exception("Method not found: {$method}");
-        }
-        return throw new \Exception("Controller not found: {$class}");
+        return false;
     }
 
     /**
@@ -184,8 +242,7 @@ class Router {
      * Checking if the current route matches the route passed in the function
      * 
      * @example [
-     * 
-     * We have these values
+     * We have these this->definedRoutes
      * 
      * $currentUrl -> "site/image/123 
      * $definedUrl -> "site/{name}/{id}
@@ -226,10 +283,9 @@ class Router {
     }
 
     /**
-     * This function returns all dynamic values ​​passed in the URL
+     * This function returns all dynamic this->definedRoutes ​​passed in the URL
      * 
      * @example [
-     * 
      * URL passed     ->  "/site/image/1234"
      * Defined route  ->  "/site/{name}/{id}"
      * 
@@ -237,7 +293,7 @@ class Router {
      * $paramList->id   = "1234"
      * 
      * @param String $url
-     * @return Marrios\Router\RouteParameters $paramList
+     * @return \Marrios\Router\RouteParameters $paramList
      */
     private function _getUrlParams(String $url)
     {

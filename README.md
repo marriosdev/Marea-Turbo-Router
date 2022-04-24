@@ -3,11 +3,21 @@
 
 
 #### Route Manager in PHP for MVC Projects
+<br>
 
-* [Starting](#starting)
-* [Parameters](#parameters)
+## Guide
+
+* ### [Starting](#starting)
+* ### [Parameters](#parameters)
 
 # Starting
+
+## 0 - Installing
+
+```php
+composer require marrios/router
+```
+
 
 ## 1 - Using functions
 
@@ -19,10 +29,8 @@
  $route = new Router();
 
 // Set route
-$route->set("GET",  "/helloworld", [function(){ echo "Hello World!";}]);
+$route->set("GET",  "/helloworld", [function(){ echo "Hello World!";}])->run();
 
-//To run the routes
-$route->run();
  ```
 When accessing the /helloworld route
  ```php
@@ -43,10 +51,8 @@ use App\Controllers\TesteController;
 $route = new Router();
 
 // Set route
-$route->set("GET",  "/helloworld", [TesteController::class, "helloWorld"]);
+$route->set("GET",  "/helloworld", [TesteController::class, "helloWorld"])->run();
 
-//To run the routes
-$route->run();
  ```
 When accessing the /helloworld route
  ```php
@@ -74,10 +80,8 @@ When accessing the /helloworld route
  $route = new Router();
 
 // Set route
-$route->set("GET", "/blog/{category}/{id_post}", [ function($param){ echo $param->category;}]);
+$route->set("GET", "/blog/{category}/{id_post}", [ function($param){ echo $param->category;}])->run();
 
-//To run the routes
-$route->run();
  ```
 When accessing the /blog/video/1323 route
  ```php
@@ -96,10 +100,8 @@ use App\Controllers\TesteController;
 $route = new Router();
 
 // Set route
-$route->set("GET", "/blog/{category}/{id_post}", [TesteController::class, "helloWorld"]);
+$route->set("GET", "/blog/{category}/{id_post}", [TesteController::class, "helloWorld"])->run();
 
-//To run the routes
-$route->run();
  ```
 
 ### Your controller should look like this
