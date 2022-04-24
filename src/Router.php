@@ -169,7 +169,12 @@ class Router {
     }
 
     /**
+     * Executing the callBack function passed in the route
      * 
+     * @param \Closure $process | Callback function
+     * @param \Marrios\Router\RouteParameters | Route parameters
+     * 
+     * @return Mixed
      */
     private function _runCallBack(\Closure $callBack, RouteParameters $routeParams)
     {
@@ -177,7 +182,12 @@ class Router {
     }
     
     /**
+     * Method that runs the controller
      * 
+     * @param Array $process | Array containing the class and the method that will be executed
+     * @param \Marrios\Router\RouteParameters | Route parameters
+     * 
+     * @return Mixed
      */
     private function _runController(Array $process, RouteParameters $routeParams)
     {
