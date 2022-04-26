@@ -2,7 +2,6 @@
 
 namespace Marrios\Router;
 
-use Exception;
 use Marrios\Router\Entities\Parameter;
 use Marrios\Router\Entities\RouteParameters;
 use Marrios\Router\Entities\Url;
