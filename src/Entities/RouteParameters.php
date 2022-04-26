@@ -1,6 +1,6 @@
 <?php
 
-namespace Marrios\Router;
+namespace Marrios\Router\Entities;
 
 use Marrios\Router\Entities\Parameter;
 
