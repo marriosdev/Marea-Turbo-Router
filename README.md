@@ -35,7 +35,8 @@ composer require marrios/router
  $route = new Router();
 
 // Set route
-$route->set("GET",  "/helloworld", [function(){ echo "Hello World!";}])->run();
+$route->get("/helloworld", [function(){ echo "Hello World!";}])->run();
+$router->notFound();
 
  ```
 When accessing the /helloworld route
@@ -57,7 +58,8 @@ use App\Controllers\TesteController;
 $route = new Router();
 
 // Set route
-$route->set("GET",  "/helloworld", [TesteController::class, "helloWorld"])->run();
+$route->post("/helloworld", [TesteController::class, "helloWorld"])->run();
+$router->notFound();
 
  ```
 When accessing the /helloworld route
@@ -86,7 +88,8 @@ When accessing the /helloworld route
  $route = new Router();
 
 // Set route
-$route->set("GET", "/blog/{category}/{id_post}", [ function($param){ echo $param->category;}])->run();
+$route->post("/blog/{category}/{id_post}", [ function($param){ echo $param->category;}])->run();
+$router->notFound();
 
  ```
 When accessing the /blog/video/1323 route
@@ -106,7 +109,8 @@ use App\Controllers\TesteController;
 $route = new Router();
 
 // Set route
-$route->set("GET", "/blog/{category}/{id_post}", [TesteController::class, "helloWorld"])->run();
+$route->get("/blog/{category}/{id_post}", [TesteController::class, "helloWorld"])->run();
+$router->notFound();
 
  ```
 
