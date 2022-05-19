@@ -29,13 +29,13 @@ composer require marrios/router
 
 
  ```php
- use Marrios\Router\Router;
+    
+use Marrios\Router\HttpRouter;
 
- // Instantiating the route object
- $route = new Router();
+$router = new HttpRouter();
 
 // Set route
-$route->get("/helloworld", [function(){ echo "Hello World!";}])->run();
+$router->get("/helloworld", [function(){ echo "Hello World!";}])->run();
 $router->notFound();
 
  ```
@@ -51,14 +51,14 @@ When accessing the /helloworld route
 
 
  ```php
-use Marrios\Router\Router;
 use App\Controllers\TesteController;
 
-// Instantiating the route object
-$route = new Router();
+use Marrios\Router\HttpRouter;
+
+$router = new HttpRouter();
 
 // Set route
-$route->post("/helloworld", [TesteController::class, "helloWorld"])->run();
+$router->post("/helloworld", [TesteController::class, "helloWorld"])->run();
 $router->notFound();
 
  ```
@@ -82,13 +82,12 @@ When accessing the /helloworld route
 ### Follow the example below using CallBack:
 
  ```php
- use Marrios\Router\Router;
+use Marrios\Router\HttpRouter;
 
- // Instantiating the route object
- $route = new Router();
+$router = new HttpRouter();
 
 // Set route
-$route->post("/blog/{category}/{id_post}", [ function($param){ echo $param->category;}])->run();
+$router->post("/blog/{category}/{id_post}", [ function($param){ echo $param->category;}])->run();
 $router->notFound();
 
  ```
@@ -102,14 +101,15 @@ When accessing the /blog/video/1323 route
 ### Follow the example below using Controller:
 
  ```php
-use Marrios\Router\Router;
-use App\Controllers\TesteController;
+use Marrios\Router\HttpRouter;
+
+$router = new HttpRouter();
 
 // Instantiating the route object
-$route = new Router();
+$router = new Router();
 
 // Set route
-$route->get("/blog/{category}/{id_post}", [TesteController::class, "helloWorld"])->run();
+$router->get("/blog/{category}/{id_post}", [TesteController::class, "helloWorld"])->run();
 $router->notFound();
 
  ```
