@@ -15,6 +15,7 @@
 
 * ### [Starting](#starting)
 * ### [Parameters](#parameters)
+* ### [Middlewares](#middlewares)
 
 # Starting
 
@@ -128,4 +129,29 @@ class TesteController
 When accessing the /blog/video/1323 route
  ```php
     1323
+ ```
+
+# Middlewares
+
+### Implement middlewares by grouping routes
+
+```php
+use Marrios\Router\HttpRouter;
+
+$router = new HttpRouter();
+
+// Set route
+$router->middlewareGroup(
+    [Middleware::class], 
+    [
+        ["GET", "/", Controller::class], 
+        ["GET", "/video", function(){ echo "Vídeos!";}],
+    ]
+);
+
+```
+
+When accessing the /video route
+ ```php
+    Vídeos!
  ```
