@@ -3,7 +3,6 @@
 namespace Marrios\Router\Exceptions;
 
 use Exception;
-use Throwable;
 
 class RouterException extends Exception
 {
