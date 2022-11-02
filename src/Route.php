@@ -17,7 +17,7 @@ class Route
      */
     public function __construct(String $method, String $route, Array $routeAction)
     {
-        return $this->set($method, $route, $routeAction);
+        $this->set($method, $route, $routeAction);
     }
     
     /**
@@ -27,12 +27,12 @@ class Route
      * @param String $route         | Defined route -> "/test/image/"
      * @param Array  $routeAction   | Action that will be performed when there is a request in the route
      * 
-     * @return Object Marrios\Router\Router; 
+     * @return Marrios\Router\Route; 
      */
     public function set(String $method, String $route, Array $routeAction)
     {        
 
-        if(count($routeAction)==0)
+        if(count($routeAction) == 0)
         {
             throw new RouterException("Third parameter invalid. You must pass a callBack function or a controller"); 
         }
@@ -47,7 +47,7 @@ class Route
                 {
                     $routeAction[1] = "index";
                 }
-                $this->routeAction= [
+                $this->routeAction = [
                     "controller" => [
                         "class"     => $routeAction[0],
                         "method"    => $routeAction[1]

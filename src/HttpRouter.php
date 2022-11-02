@@ -2,7 +2,6 @@
 
 namespace Marrios\Router;
 
-use Exception;
 use Marrios\Router\Entities\Parameter;
 use Marrios\Router\Entities\RouteParameters;
 use Marrios\Router\Entities\Url;
@@ -16,10 +15,11 @@ use Marrios\Router\HttpMethods\Post;
 use Marrios\Router\HttpMethods\Put;
 use Marrios\Router\Route;
 use Marrios\Router\Pages\NotFound;
+use Marrios\Router\Middleware;
 
 class HttpRouter {
 
-    use Post, Get, Put, Delete, Patch, Head, Options, NotFound;
+    use Post, Get, Put, Delete, Patch, Head, Options, NotFound, Middleware;
 
     /**
      * @var \Marrios\Router\Route
@@ -27,18 +27,18 @@ class HttpRouter {
     public Route $definedRoute;
 
     /**
-     * @var String
+     * @var Url
      */
     public $currentUrl;
-
+    
     /**
      * 
      */
     public function __construct()
     {
-        $this->currentUrl = $this->clearUrl($_SERVER["REQUEST_URI"]);
+        $this->currentUrl = new Url($_SERVER["REQUEST_URI"]);
     }
-
+    
     /**
      * Processing routes
      */
@@ -46,10 +46,10 @@ class HttpRouter {
     {
         $currentUrl = $this->currentUrl;        
         $routePath  = $this->definedRoute->route; 
-        $url        = $this->clearUrl($this->definedRoute->route);
+        $url        = new Url($this->definedRoute->route);
 
         if($this->definedRoute->method == $_SERVER["REQUEST_METHOD"]){
-            $urlsMatched = $this->matched(new Url($currentUrl), new Url($url));
+            $urlsMatched = $this->matched($currentUrl, $url);
             
             // If it matches, let's run it
             if($urlsMatched){
@@ -58,42 +58,16 @@ class HttpRouter {
                 $urlParams = $this->getUrlParams($url);
                 
                 // Running
-                $this->execute($this->definedRoute->routeAction, $urlParams);
+                if($this->middlewareAccess) {
+                    $this->execute($this->definedRoute->routeAction, $urlParams);
+                }
 
                 //closing
+                $this->middlewareAccess = true;
                 exit;
             }
         }
-    }
-
-    /**
-     * This function removes the "/" from the beginning 
-     * of the string and from the end of the passed string
-     * 
-     * @example [
-     * clearUrl("/site/image/") -> "site/image" 
-     * 
-     * @param String $url
-     * @return String $url
-     */
-    public function clearUrl(String $url)
-    {
-        if(strlen($url) <= 1)
-        {
-            return "/";
-        }
-
-        if($url[0] == "/"){
-            $url[0] = " ";
-            $url = trim($url);
-        }
-
-        if($url[strlen($url)-1] == "/"){
-            $url[strlen($url)-1] = " ";
-            $url = trim($url);
-        }
-
-        return $url;
+        $this->middlewareAccess = true;
     }
 
     /**
@@ -112,8 +86,8 @@ class HttpRouter {
      * 
      * the function return will be: false
      * 
-     * @param Marrios\Router\Entities\Url  $currentUrl
-     * @param Marrios\Router\Entities\Url  $definedUrl
+     * @param Url  $currentUrl
+     * @param Url  $definedUrl
      */
     public function matched(Url $currentUrl, Url $definedUrl)
     {
@@ -150,13 +124,13 @@ class HttpRouter {
      * $paramList->name = "image"
      * $paramList->id   = "1234"
      * 
-     * @param String $url
+     * @param Url $url
      * @return \Marrios\Router\Entities\RouteParameters $paramList
      */
-    public function getUrlParams(String $url)
+    public function getUrlParams(Url $url)
     {
-        $url        = explode("/", $url);
-        $currentUrl = explode("/", $this->currentUrl);
+        $url        = explode("/", $url->get());
+        $currentUrl = explode("/", $this->currentUrl->get());
 
         $paramsList = new RouteParameters();
         
@@ -179,7 +153,7 @@ class HttpRouter {
      * 
      * @return Mixed
      */
-    public function runCallBack(\Closure $callBack, \Marrios\Router\Entities\RouteParameters $routeParams)
+    public function runCallBack(\Closure $callBack, RouteParameters $routeParams)
     {
         try{
             return $callBack($routeParams);
@@ -197,7 +171,7 @@ class HttpRouter {
      * 
      * @return Mixed
      */
-    public function runController(Array $process, \Marrios\Router\Entities\RouteParameters $routeParams)
+    public function runController(Array $process, RouteParameters $routeParams)
     {
         $controller = new $process["class"]();
         $method = $process["method"];
@@ -211,7 +185,6 @@ class HttpRouter {
         {
             return $controller->$method($routeParams);
         }
-
         return $controller->$method();
     }
 
@@ -222,7 +195,7 @@ class HttpRouter {
      * 
      * @return bool|\Exception
      */
-    public function execute(Array $process, \Marrios\Router\Entities\RouteParameters $routeParams)
+    public function execute(Array $process, RouteParameters $routeParams)
     {
         if(isset($process["callBack"]))
         {
@@ -235,44 +208,5 @@ class HttpRouter {
             return true;
         }
         throw new RouterException("An error occurred while performing this action");
-    }
-
-    /**
-     * 
-     */
-    public function middlewareGroup(Array $middleware = null, Array $routes)
-    {
-        try{
-            if($this->runMiddleware($middleware)) {
-                foreach($routes as $route) {
-                    $method = strtolower($route[0]);
-                    $this->$method($route[1], [$route[2]])->run();
-                }            
-            }
-        }catch(\Marrios\Router\Exceptions\RouterException $e) {
-            echo json_encode($e->getMessage());die;
-        }
-    }
-
-    /**
-     * 
-     */
-    public function runMiddleware(Array $middlewares) 
-    {
-        if(!is_null($middlewares)) {
-            foreach($middlewares as $middleware) {
-                if (class_exists($middleware)) {
-                    $middlewareInstance = new $middleware();
-                    if(method_exists($middlewareInstance, "handle")) {
-                        return ($middlewareInstance->handle()) ? true : false;
-                    }else{
-                        throw new RouterException($middleware." not implemented correctly");
-                    }
-                }else{
-                    throw new RouterException($middleware." does not exists");
-                }
-            }
-            return true;
-        }
     }
 }

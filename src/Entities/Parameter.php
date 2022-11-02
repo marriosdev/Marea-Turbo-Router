@@ -4,12 +4,11 @@ namespace Marrios\Router\Entities;
 
 class Parameter
 {
+    private $parameter;
 
-    private Mixed $parameter;
+    private $dirtyParameter;
 
-    private Mixed $dirtyParameter;
-
-    public function __construct(Mixed $parameter)
+    public function __construct($parameter)
     {
         $this->dirtyParameter   = $parameter; 
         $this->parameter        = $this->clear($parameter);  

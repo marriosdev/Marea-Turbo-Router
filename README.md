@@ -133,7 +133,7 @@ When accessing the /blog/video/1323 route
 
 # Middlewares
 
-### Implement middlewares by grouping routes
+### Implement middlewares
 
 ```php
 use Marrios\Router\HttpRouter;
@@ -141,17 +141,13 @@ use Marrios\Router\HttpRouter;
 $router = new HttpRouter();
 
 // Set route
-$router->middlewareGroup(
-    [Middleware::class], 
-    [
-        ["GET", "/", Controller::class], 
-        ["GET", "/video", function(){ echo "Vídeos!";}],
-    ]
-);
+$router->middleware([Middleware::class])
+       ->get("/ok", [function () {echo "OK";}])
+       ->run();
 
 ```
 
-When accessing the /video route
+When accessing the /ok route
  ```php
-    Vídeos!
+    OK
  ```

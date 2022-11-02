@@ -6,7 +6,6 @@ use Marrios\Router\Entities\Parameter;
 
 class RouteParameters
 {
-
     public Int $count;
 
     public function __construct()
