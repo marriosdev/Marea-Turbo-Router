@@ -135,8 +135,20 @@ When accessing the /blog/video/1323 route
 
 ### Implement middlewares
 
+<hr>
+
+### Middleware 
+```php
+class Middleware
+{
+    public function handle() {
+        return true;
+    }
+}
+```
 ```php
 use Marrios\Router\HttpRouter;
+use Middleware;
 
 $router = new HttpRouter();
 
