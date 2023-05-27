@@ -16,6 +16,7 @@ use Marrios\Router\HttpMethods\Put;
 use Marrios\Router\Route;
 use Marrios\Router\Pages\NotFound;
 use Marrios\Router\Middleware;
+use Reflection;
 
 class HttpRouter {
 
@@ -173,19 +174,8 @@ class HttpRouter {
      */
     public function runController(Array $process, RouteParameters $routeParams)
     {
-        $controller = new $process["class"]();
-        $method = $process["method"];
-
-        if(!method_exists($controller, $method))
-        {
-            throw new RouterException("Controller method not found: ". $method);
-        }
-
-        if($routeParams->count > 0)
-        {
-            return $controller->$method($routeParams);
-        }
-        return $controller->$method();
+        $controller = new Controller($process['class']);
+        $controller->runMethod($process['method'], $routeParams);
     }
 
     /**
