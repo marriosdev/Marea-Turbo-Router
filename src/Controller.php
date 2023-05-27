@@ -35,7 +35,6 @@ class Controller
         return method_exists($this->classController, $method);
     }
 
-
     private function recursiveDependenciesBuild(ReflectionClass $reflectionControllerInstance) : mixed
     {
         $dependencies = $reflectionControllerInstance->getConstructor()->getParameters();
