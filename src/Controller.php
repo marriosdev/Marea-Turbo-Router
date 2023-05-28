@@ -10,9 +10,9 @@ class Controller
     private String $classController;
     private Mixed $controller;
 
-    public function __construct(String $clasController)
+    public function __construct(String $classController)
     {
-        $this->classController = $clasController;
+        $this->classController = $classController;
     }
 
     private function build() : void
