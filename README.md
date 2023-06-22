@@ -9,6 +9,11 @@
 
 
 #### HTTP Route Manager for MVC Projects
+    
+#### OPEN SOURCE
+
+#### Any bug you find, you can open PR
+    
 <br>
 
 ## Guide
