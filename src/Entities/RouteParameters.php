@@ -4,6 +4,7 @@ namespace Marrios\Router\Entities;
 
 use Marrios\Router\Entities\Parameter;
 
+#[\AllowDynamicProperties]
 class RouteParameters
 {
     public Int $count;
