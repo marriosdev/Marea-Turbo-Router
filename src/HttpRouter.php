@@ -2,6 +2,7 @@
 
 namespace Marrios\Router;
 
+use Marrios\Router\Logs\Logs;
 use Marrios\Router\Entities\Parameter;
 use Marrios\Router\Entities\RouteParameters;
 use Marrios\Router\Entities\Url;
@@ -16,11 +17,10 @@ use Marrios\Router\HttpMethods\Put;
 use Marrios\Router\Route;
 use Marrios\Router\Pages\NotFound;
 use Marrios\Router\Middleware;
-use Reflection;
 
 class HttpRouter {
 
-    use Post, Get, Put, Delete, Patch, Head, Options, NotFound, Middleware;
+    use Post, Get, Put, Delete, Patch, Head, Options, NotFound, Middleware, Logs;
 
     /**
      * @var \Marrios\Router\Route
@@ -62,9 +62,13 @@ class HttpRouter {
                 if($this->middlewareAccess) {
                     $this->execute($this->definedRoute->routeAction, $urlParams);
                 }
+                
+                // Register logs
+                $this->startLogs($this);
 
                 //closing
                 $this->middlewareAccess = true;
+                
                 exit;
             }
         }

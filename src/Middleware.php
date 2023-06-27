@@ -34,7 +34,8 @@ trait Middleware
                 throw new RouterException($middleware ." not implemented correctly");
             }
 
-            return $this->middlewareAccess = $middlewareInstance->handle();
+            $this->middlewareAccess = $middlewareInstance->handle();
+            return $this;
         }
     }
 }
