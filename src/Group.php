@@ -2,10 +2,17 @@
 
 namespace Marrios\Router;
 
-class Group
+trait Group
 {
-    private function setGroup() : void
+    private bool $runGroup = true;
+
+    public function group(Array $routes) : void
     {
+        foreach($routes as $route) {
+            $route->run();
+        }
         
+        $this->runGroup = false;
+        $this->middlewareAccess = true;
     }
 }

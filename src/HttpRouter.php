@@ -17,10 +17,11 @@ use Marrios\Router\HttpMethods\Put;
 use Marrios\Router\Route;
 use Marrios\Router\Pages\NotFound;
 use Marrios\Router\Middleware;
+use Marrios\Router\Group;
 
-class HttpRouter {
-
-    use Post, Get, Put, Delete, Patch, Head, Options, NotFound, Middleware, Logs;
+class HttpRouter
+{
+    use Group, Post, Get, Put, Delete, Patch, Head, Options, NotFound, Middleware, Logs;
 
     /**
      * @var \Marrios\Router\Route
@@ -31,7 +32,7 @@ class HttpRouter {
      * @var Url
      */
     public $currentUrl;
-    
+
     /**
      * 
      */
@@ -39,40 +40,37 @@ class HttpRouter {
     {
         $this->currentUrl = new Url($_SERVER["REQUEST_URI"]);
     }
-    
+
     /**
      * Processing routes
      */
     public function run()
     {
-        $currentUrl = $this->currentUrl;        
-        $routePath  = $this->definedRoute->route; 
+        // If it is running in a group of routes, it will only execute the routes after they are grouped. 
+        // So we stop the code here and let the Group perform the necessary steps        
+        if ($this->runGroup) {
+            $instanceClone = clone $this;
+            $instanceClone->runGroup = false;
+            return $instanceClone;
+        }
+
+        $currentUrl = $this->currentUrl;
+        $routePath  = $this->definedRoute->route;
         $url        = new Url($this->definedRoute->route);
 
-        if($this->definedRoute->method == $_SERVER["REQUEST_METHOD"]){
+        if ($this->definedRoute->method == $_SERVER["REQUEST_METHOD"]) {
             $urlsMatched = $this->matched($currentUrl, $url);
-            
-            // If it matches, let's run it
-            if($urlsMatched){
-                
-                // If there is any dynamic parameter defined in the route, we will get these this->definedRoutes
+            if ($urlsMatched) {
                 $urlParams = $this->getUrlParams($url);
-                
-                // Running
-                if($this->middlewareAccess) {
+                if ($this->middlewareAccess) {
                     $this->execute($this->definedRoute->routeAction, $urlParams);
+                    $this->middlewareAccess = true;
+                    $this->startLogs($this);
+                    exit;
                 }
-                
-                // Register logs
-                $this->startLogs($this);
-
-                //closing
-                $this->middlewareAccess = true;
-                
-                exit;
             }
+            $this->middlewareAccess = true;
         }
-        $this->middlewareAccess = true;
     }
 
     /**
@@ -98,20 +96,20 @@ class HttpRouter {
     {
         $currentUrl = explode("/", $currentUrl->get());
         $definedUrl = explode("/", $definedUrl->get());
-        
-        if(count($currentUrl) != count($definedUrl)){
+
+        if (count($currentUrl) != count($definedUrl)) {
             return false;
         }
 
         $countMatch = count($definedUrl);
 
-        for($i=0; $i < $countMatch; $i++){
-            if($definedUrl[$i] !=  $currentUrl[$i]){
+        for ($i = 0; $i < $countMatch; $i++) {
+            if ($definedUrl[$i] !=  $currentUrl[$i]) {
                 /**
                  * Checking if this parameter the parameter is dynamic
                  * If it is dynamic, we disregard the difference
                  */
-                if(!preg_match("/[{}]/", $definedUrl[$i])){
+                if (!preg_match("/[{}]/", $definedUrl[$i])) {
                     return false;
                 }
             }
@@ -138,17 +136,17 @@ class HttpRouter {
         $currentUrl = explode("/", $this->currentUrl->get());
 
         $paramsList = new RouteParameters();
-        
-        for($i=0; $i < count($url); $i++){
+
+        for ($i = 0; $i < count($url); $i++) {
             $definedParam = new Parameter($url[$i]);
             $currentParam = new Parameter($currentUrl[$i]);
 
-            if($definedParam->valid()){
+            if ($definedParam->valid()) {
                 $paramsList->setParameter($definedParam, $currentParam);
             }
         }
         return $paramsList;
-    }   
+    }
 
     /**
      * Executing the callBack function passed in the route
@@ -160,14 +158,13 @@ class HttpRouter {
      */
     public function runCallBack(\Closure $callBack, RouteParameters $routeParams)
     {
-        try{
+        try {
             return $callBack($routeParams);
-        }catch(RouterException $e)
-        {
+        } catch (RouterException $e) {
             throw new RouterException($e->getMessage());
-        } 
+        }
     }
-    
+
     /**
      * Method that runs the controller
      * 
@@ -176,7 +173,7 @@ class HttpRouter {
      * 
      * @return Mixed
      */
-    public function runController(Array $process, RouteParameters $routeParams)
+    public function runController(array $process, RouteParameters $routeParams)
     {
         $controller = new Controller($process['class']);
         $controller->runMethod($process['method'], $routeParams);
@@ -189,15 +186,13 @@ class HttpRouter {
      * 
      * @return bool|\Exception
      */
-    public function execute(Array $process, RouteParameters $routeParams)
+    public function execute(array $process, RouteParameters $routeParams)
     {
-        if(isset($process["callBack"]))
-        {
+        if (isset($process["callBack"])) {
             $this->runCallBack($process["callBack"], $routeParams);
             return true;
         }
-        if(isset($process["controller"]))
-        {
+        if (isset($process["controller"])) {
             $this->runController($process["controller"], $routeParams);
             return true;
         }

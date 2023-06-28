@@ -16,8 +16,6 @@ trait Middleware
      */
     public function middleware(Array $middlewares) 
     {
-        $access = false;
-
         if(is_null($middlewares)) {
            return false; 
         }

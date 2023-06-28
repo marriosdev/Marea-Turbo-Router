@@ -136,36 +136,29 @@ When accessing the /blog/video/1323 route
     1323
  ```
 
-# Middlewares
+# Routes Group 
 
-### Implement middlewares
+### Implement route groups
 
 <hr>
 
-### Middleware 
+### Group
 ```php
-class Middleware
-{
-    public function handle() {
-        return true;
-    }
-}
-```
-### Routes 
-```php
-use Marrios\Router\HttpRouter;
-use Middleware;
 
-$router = new HttpRouter();
-
-// Set route
-$router->middleware([Middleware::class])
-       ->get("/ok", [function () {echo "OK";}])
-       ->run();
+$router->group([
+    $router->get("ok",  [function () {echo "Hello";}])->run(),
+    $router->get("ok2",  [function () {echo "Hello 2";}])->run()
+]);
 
 ```
 
-When accessing the /ok route
- ```php
-    OK
+### Route Group with Middleware
+```php
+
+$router->middleware([Middleware::class])->group([
+    $router->get("ok",  [function () {echo "Hello";}])->run(),
+    $router->get("ok2",  [function () {echo "Hello 2";}])->run()
+]);
+
  ```
+
