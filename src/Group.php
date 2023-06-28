@@ -4,7 +4,7 @@ namespace Marrios\Router;
 
 trait Group
 {
-    private bool $runGroup = true;
+    private bool $runGroup = false;
 
     public function group(Array $routes) : void
     {
