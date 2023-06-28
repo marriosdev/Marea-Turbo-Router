@@ -161,4 +161,9 @@ $router->middleware([Middleware::class])->group([
 ]);
 
  ```
+# Access logs
 
+### Enable logs and define the location where the logs will be stored. Note: this line must be defined at the beginning of the file
+```php
+$router->logs(logs: true)->setStorageLogs(__DIR__);
+ ```
