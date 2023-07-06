@@ -36,7 +36,9 @@ trait Logs
         $log = new Log(
             ip: $_SERVER["REMOTE_ADDR"],
             dateTime: new \DateTime(),
-            url: $routerInstance->currentUrl
+            url: $routerInstance->currentUrl,
+            timeTaskExecution: $routerInstance->timeTaskExecution,
+            allProcessExecutionTime: $routerInstance->allProcessExecutionTime
         );
 
         $this->register($log);
@@ -44,7 +46,12 @@ trait Logs
 
     private function formatLog(Log $log) : String 
     {
-        $log = "[{$log->dateTime->format('Y-m-d H:i:s')}] - {$log->ip} - {$log->url->get()}\n";
+        $log = "IP: " . $log->ip . "\n" .
+            "Date: " . $log->dateTime->format("Y-m-d H:i:s") . "\n" .
+            "Url: " . $log->url->get() . "\n" .
+            "Task Time: " . $log->timeTaskExecution . "\n" .
+            "Process Time: " . $log->allProcessExecutionTime . "\n" .
+            "--------------------------------------\n";
         return $log;
     }
 

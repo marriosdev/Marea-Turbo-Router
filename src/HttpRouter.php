@@ -34,29 +34,34 @@ class HttpRouter
     public $currentUrl;
 
     /**
+     * @var float  
+     */
+    protected $allProcessExecutionTime;
+
+    /**
+     * @var float  
+     */
+    protected $timeTaskExecution;
+
+    /**
      * 
      */
     public function __construct()
     {
         $this->currentUrl = new Url($_SERVER["REQUEST_URI"]);
+        $this->allProcessExecutionTime = microtime(true);
     }
-
+    
     /**
      * Processing routes
      */
     public function run()
     {
-        // If it is running in a group of routes, it will only execute the routes after they are grouped. 
-        // So we stop the code here and let the Group perform the necessary steps        
-        if ($this->runGroup) {
-            $instanceClone = clone $this;
-            $instanceClone->runGroup = false;
-            return $instanceClone;
-        }
-
         $currentUrl = $this->currentUrl;
         $routePath  = $this->definedRoute->route;
         $url        = new Url($this->definedRoute->route);
+        
+        $this->timeTaskExecution = microtime(true);
 
         if ($this->definedRoute->method == $_SERVER["REQUEST_METHOD"]) {
             $urlsMatched = $this->matched($currentUrl, $url);
@@ -65,6 +70,10 @@ class HttpRouter
                 if ($this->middlewareAccess) {
                     $this->execute($this->definedRoute->routeAction, $urlParams);
                     $this->middlewareAccess = true;
+
+                    $this->timeTaskExecution        = microtime(true) - $this->timeTaskExecution;
+                    $this->allProcessExecutionTime  = microtime(true) - $this->allProcessExecutionTime;
+                    
                     $this->startLogs($this);
                     exit;
                 }
@@ -105,10 +114,6 @@ class HttpRouter
 
         for ($i = 0; $i < $countMatch; $i++) {
             if ($definedUrl[$i] !=  $currentUrl[$i]) {
-                /**
-                 * Checking if this parameter the parameter is dynamic
-                 * If it is dynamic, we disregard the difference
-                 */
                 if (!preg_match("/[{}]/", $definedUrl[$i])) {
                     return false;
                 }
@@ -132,8 +137,9 @@ class HttpRouter
      */
     public function getUrlParams(Url $url)
     {
-        $url        = explode("/", $url->get());
-        $currentUrl = explode("/", $this->currentUrl->get());
+        
+        $url        = explode("/", explode("?", $url->get())[0]);
+        $currentUrl = explode("/", explode("?", $this->currentUrl->get())[0]);
 
         $paramsList = new RouteParameters();
 

@@ -1,18 +1,12 @@
 <?php
 
 namespace Marrios\Router;
+use Closure;
 
 trait Group
 {
-    private bool $runGroup = false;
-
-    public function group(Array $routes) : void
+    public function group(Closure $closure) : void
     {
-        foreach($routes as $route) {
-            $route->run();
-        }
-        
-        $this->runGroup = false;
-        $this->middlewareAccess = true;
+        $closure($this);
     }
 }

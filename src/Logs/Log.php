@@ -10,7 +10,9 @@ class Log
     public function __construct(
         public String $ip,
         public DateTime $dateTime,
-        public Url $url
+        public Url $url,
+        public float $timeTaskExecution,
+        public float $allProcessExecutionTime,
     ){
     }
 }
