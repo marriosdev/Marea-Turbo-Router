@@ -6,7 +6,7 @@ use Marrios\Router\HttpRouter;
 
 trait Logs
 {
-    public bool $activeLogs;
+    public bool $active;
     public string $storageLogs;
     
     public function setStorageLogs(String $path) 

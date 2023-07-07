@@ -1,4 +1,5 @@
 /vendor/
 /teste/
 /index.php
-router.log
+/nohup.out
+/router.log
