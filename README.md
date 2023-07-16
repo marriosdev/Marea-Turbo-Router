@@ -4,13 +4,11 @@
     <a href="https://packagist.org/packages/marrios/router"><img src="https://img.shields.io/packagist/l/marrios/router" alt="License"></a>
 </p>
 
-@MárriosDev
+@marriosdev
 # Marrios/Router
 
 
 #### HTTP Route Manager for MVC Projects
-    
-#### OPEN SOURCE
 
 #### Any bug you find, you can open PR
     
